@@ -1,0 +1,9 @@
+{
+  "repos": [
+    {
+      "id": "filesforsats",
+      "organisation": "lnbits",
+      "repository": "filesforsats"
+    }
+  ]
+}

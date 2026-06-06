@@ -1,0 +1,14 @@
+[
+  {
+    "path": "/filesforsats/",
+    "name": "PageFilesforsats",
+    "template": "/filesforsats/static/index.vue",
+    "component": "/filesforsats/static/index.js"
+  },
+  {
+    "path": "/filesforsats/:id",
+    "name": "PageFilesforsatsPublic",
+    "template": "/filesforsats/static/public_page.vue",
+    "component": "/filesforsats/static/public_page.js"
+  }
+]

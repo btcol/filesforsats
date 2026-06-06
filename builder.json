@@ -1,0 +1,198 @@
+{
+    "id": "filesforsats",
+    "name": "filesforsats",
+    "stub_version": "v0.3.0",
+    "short_description": "Secure digital file delivery with Lightning payments and cryptographic file verification.",
+    "description": "FilesForSats is a trustless digital file delivery platform powered by Bitcoin Lightning. Buyers and sellers first agree on the SHA-256 checksum of the file being exchanged, ensuring both parties are referring to the exact same content. The buyer then enters the agreed checksum, the system verifies it against the seller's uploaded file, and only then generates a Lightning invoice for payment. Once the payment is confirmed, the download is automatically unlocked, providing a secure and transparent way to exchange digital files without relying on trust between the parties.",
+    "owner_data": {
+        "name": "Merchants",
+        "editable": true,
+        "fields": [
+            {
+                "name": "name",
+                "type": "str",
+                "label": "Name",
+                "hint": "Name of merchant",
+                "optional": false,
+                "editable": true,
+                "searchable": true,
+                "sortable": true,
+                "fields": []
+            },
+            {
+                "name": "mail",
+                "type": "str",
+                "label": "Mail",
+                "hint": "Mail of merchant",
+                "optional": false,
+                "editable": true,
+                "searchable": true,
+                "sortable": true,
+                "fields": []
+            },
+            {
+                "name": "currency",
+                "type": "currency",
+                "label": "Currency",
+                "hint": "Currency",
+                "optional": false,
+                "editable": true,
+                "searchable": true,
+                "sortable": true,
+                "fields": []
+            },
+            {
+                "name": "amount",
+                "type": "int",
+                "label": "Amount",
+                "hint": "Amount given to merchant to draw",
+                "optional": false,
+                "editable": true,
+                "searchable": true,
+                "sortable": true,
+                "fields": []
+            },
+            {
+                "name": "paiddown",
+                "type": "bool",
+                "label": "Paid_down",
+                "hint": "Paid label",
+                "optional": true,
+                "editable": false,
+                "searchable": true,
+                "sortable": true,
+                "fields": []
+            },
+            {
+                "name": "wallet",
+                "type": "wallet",
+                "label": "Wallet",
+                "hint": "Wallet to use",
+                "optional": false,
+                "editable": true,
+                "searchable": true,
+                "sortable": true,
+                "fields": []
+            }
+        ]
+    },
+    "client_data": {
+        "name": "Ignore",
+        "editable": true,
+        "fields": [
+            {
+                "name": "hash",
+                "type": "str",
+                "label": "Hash",
+                "hint": "Hash for compare",
+                "optional": true,
+                "editable": true,
+                "searchable": true,
+                "sortable": true,
+                "fields": []
+            },
+            {
+                "name": "paiddown",
+                "type": "bool",
+                "label": "Paid",
+                "hint": "Paid label",
+                "optional": true,
+                "editable": true,
+                "searchable": true,
+                "sortable": true,
+                "fields": []
+            }
+        ]
+    },
+    "settings_data": {
+        "name": "Settings",
+        "editable": true,
+        "fields": [
+            {
+                "name": "name",
+                "type": "str",
+                "label": "Name",
+                "hint": "Name of merchant",
+                "optional": true,
+                "editable": true,
+                "searchable": true,
+                "sortable": true,
+                "fields": []
+            },
+            {
+                "name": "mail",
+                "type": "text",
+                "label": "Mail",
+                "hint": "Email of merchant",
+                "optional": true,
+                "editable": true,
+                "searchable": true,
+                "sortable": true,
+                "fields": []
+            },
+            {
+                "name": "amount",
+                "type": "int",
+                "label": "Amount",
+                "hint": "Amount given to merchant to draw",
+                "optional": true,
+                "editable": true,
+                "searchable": true,
+                "sortable": true,
+                "fields": []
+            },
+            {
+                "name": "currency",
+                "type": "currency",
+                "label": "Currency",
+                "hint": "Currency",
+                "optional": true,
+                "editable": true,
+                "searchable": true,
+                "sortable": true,
+                "fields": []
+            },
+            {
+                "name": "paid_down",
+                "type": "bool",
+                "label": "Paid down",
+                "hint": "Boolean label",
+                "optional": true,
+                "editable": true,
+                "searchable": true,
+                "sortable": true,
+                "fields": []
+            }
+        ],
+        "enabled": false,
+        "type": "user"
+    },
+    "public_page": {
+        "has_public_page": true,
+        "owner_data_fields": {
+            "name": "name",
+            "description": "mail"
+        },
+        "client_data_fields": {
+            "public_inputs": [
+                "hash"
+            ]
+        },
+        "action_fields": {
+            "generate_action": true,
+            "generate_payment_logic": true,
+            "wallet_id": "wallet",
+            "currency": "currency",
+            "amount": "amount",
+            "amount_source": "owner_data",
+            "paid_flag": "paiddown"
+        }
+    },
+    "preview_action": {
+        "is_preview_mode": false,
+        "is_settings_preview": false,
+        "is_owner_data_preview": false,
+        "is_client_data_preview": false,
+        "is_public_page_preview": false
+    }
+}

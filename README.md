@@ -1,4 +1,4 @@
-# files4sats — An [LNbits](https://github.com/lnbits/lnbits) Extension
+# filesforsats — An [LNbits](https://github.com/lnbits/lnbits) Extension
 
 > **Sell downloadable digital files through Bitcoin Lightning payments, with cryptographic file integrity verification built in.**
 
@@ -45,7 +45,7 @@ The maximum allowed upload size is defined in `services.py`:
 MAX_UPLOAD_BYTES: int = 1 * 1024 * 1024 * 1024  # 1 GiB — change freely
 ```
 
-Uploaded files are stored in `<lnbits_data_folder>/files4sats/` — outside the web root.
+Uploaded files are stored in `<lnbits_data_folder>/filesforsats/` — outside the web root.
 
 ---
 
@@ -68,7 +68,7 @@ Install via the LNbits Extension Manager or clone directly into your extensions 
 
 ```bash
 cd lnbits/extensions
-git clone https://github.com/lnbits/files4sats filesforsats
+git clone https://github.com/lnbits/filesforsats filesforsats
 ```
 
 Then enable the extension from the LNbits admin panel.

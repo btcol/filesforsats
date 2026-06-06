@@ -25,10 +25,10 @@ window.PageFilesforsatsPublic = {
   },
 
   computed: {
-    shareUrl () {
+    shareUrl() {
       return window.location.href
     },
-    fileSizeFormatted () {
+    fileSizeFormatted() {
       if (!this.product) return ''
       const bytes = this.product.file_size
       if (!bytes) return '—'
@@ -41,9 +41,9 @@ window.PageFilesforsatsPublic = {
 
   methods: {
     // ── 1. Load product info ─────────────────────────────────────────────────
-    async fetchProduct () {
+    async fetchProduct() {
       try {
-        const {data} = await LNbits.api.request(
+        const { data } = await LNbits.api.request(
           'GET',
           `/filesforsats/api/v1/products/${this.productId}/public`
         )
@@ -52,12 +52,12 @@ window.PageFilesforsatsPublic = {
       } catch (err) {
         this.loadError = true
         this.step = 'error'
-        console.warn('files4sats: could not load product', err)
+        console.warn('filesforsats: could not load product', err)
       }
     },
 
     // ── 2. Submit integrity code ─────────────────────────────────────────────
-    async submitIntegrity () {
+    async submitIntegrity() {
       if (!this.integrityCode.trim()) {
         this.integrityError = 'Please enter the integrity code.'
         return
@@ -65,11 +65,11 @@ window.PageFilesforsatsPublic = {
       this.integrityLoading = true
       this.integrityError = ''
       try {
-        const {data} = await LNbits.api.request(
+        const { data } = await LNbits.api.request(
           'POST',
           `/filesforsats/api/v1/products/${this.productId}/verify`,
           null,
-          {code: this.integrityCode.trim()}
+          { code: this.integrityCode.trim() }
         )
         this.integrityToken = data.integrity_token
         this.step = 'integrity_ok'
@@ -87,14 +87,14 @@ window.PageFilesforsatsPublic = {
     },
 
     // ── 3. Create invoice ────────────────────────────────────────────────────
-    async createInvoice () {
+    async createInvoice() {
       this.invoiceLoading = true
       try {
-        const {data} = await LNbits.api.request(
+        const { data } = await LNbits.api.request(
           'POST',
           `/filesforsats/api/v1/products/${this.productId}/invoice`,
           null,
-          {integrity_token: this.integrityToken || ''}
+          { integrity_token: this.integrityToken || '' }
         )
         this.paymentRequest = data.payment_request
         this.paymentHash = data.payment_hash
@@ -108,14 +108,14 @@ window.PageFilesforsatsPublic = {
     },
 
     // ── 4. Wait for payment (WebSocket + polling fallback) ───────────────────
-    async waitForPayment (paymentHash) {
+    async waitForPayment(paymentHash) {
       // Primary: WebSocket
       try {
         const url = new URL(window.location)
         url.protocol = url.protocol === 'https:' ? 'wss' : 'ws'
         url.pathname = `/api/v1/ws/${paymentHash}`
         const ws = new WebSocket(url)
-        ws.addEventListener('message', async ({data}) => {
+        ws.addEventListener('message', async ({ data }) => {
           const msg = JSON.parse(data)
           if (msg.pending === false) {
             ws.close()
@@ -133,13 +133,13 @@ window.PageFilesforsatsPublic = {
       }
     },
 
-    startPolling (paymentHash) {
+    startPolling(paymentHash) {
       this._pollInterval = setInterval(() => this.pollStatus(paymentHash), 5000)
     },
 
-    async pollStatus (paymentHash) {
+    async pollStatus(paymentHash) {
       try {
-        const {data} = await LNbits.api.request(
+        const { data } = await LNbits.api.request(
           'GET',
           `/filesforsats/api/v1/purchases/${paymentHash}/status`
         )
@@ -150,15 +150,15 @@ window.PageFilesforsatsPublic = {
       } catch (_) { /* silent — will retry */ }
     },
 
-    async onPaymentConfirmed () {
+    async onPaymentConfirmed() {
       clearInterval(this._pollInterval)
       this.step = 'paid'
       this.downloadReady = true
-      Quasar.Notify.create({type: 'positive', message: 'Payment confirmed! Your download is ready.'})
+      Quasar.Notify.create({ type: 'positive', message: 'Payment confirmed! Your download is ready.' })
     },
 
     // ── 5. Trigger download ──────────────────────────────────────────────────
-    downloadFile () {
+    downloadFile() {
       // Navigate to protected endpoint; server validates payment and streams file
       const a = document.createElement('a')
       a.href = `/filesforsats/api/v1/download/${this.paymentHash}`
@@ -169,12 +169,12 @@ window.PageFilesforsatsPublic = {
     }
   },
 
-  async created () {
+  async created() {
     this.productId = this.$route.params.id
     await this.fetchProduct()
   },
 
-  beforeUnmount () {
+  beforeUnmount() {
     clearInterval(this._pollInterval)
   }
 }

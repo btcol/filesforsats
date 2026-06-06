@@ -1,5 +1,5 @@
 """
-API views for the files4sats extension.
+API views for the filesforsats extension.
 
 Endpoint summary
 ----------------

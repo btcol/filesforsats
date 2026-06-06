@@ -1,4 +1,4 @@
-# Page routes for the files4sats extension.
+# Page routes for the filesforsats extension.
 
 from fastapi import APIRouter, Depends
 from lnbits.core.views.generic import index, index_public

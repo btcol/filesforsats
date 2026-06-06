@@ -1,5 +1,5 @@
 """
-Business-logic / service layer for files4sats.
+Business-logic / service layer for filesforsats.
 
 Key responsibilities:
 - Compute SHA-256 of uploaded files (server-side only)
@@ -53,7 +53,7 @@ def _storage_dir() -> Path:
     """
     from lnbits.settings import settings  # imported late to avoid circular import
 
-    base = Path(settings.lnbits_data_folder) / "files4sats"
+    base = Path(settings.lnbits_data_folder) / "filesforsats"
     base.mkdir(parents=True, exist_ok=True)
     return base
 
@@ -113,7 +113,7 @@ async def save_uploaded_file(upload: UploadFile) -> tuple[str, str, str, int, st
         raise
     except Exception as exc:
         dest_path.unlink(missing_ok=True)
-        logger.error(f"files4sats: error saving upload: {exc}")
+        logger.error(f"filesforsats: error saving upload: {exc}")
         raise HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, "Could not save the uploaded file.")
 
     return original_name, storage_name, mime_type, total_bytes, sha256.hexdigest()
@@ -233,7 +233,7 @@ async def create_purchase_invoice(
         amount=product.price_sats,
         currency="sat",
         extra={"tag": "filesforsats", "purchase_id": purchase.id},
-        memo=f"files4sats: {product.name} [{purchase.id[:8]}]",
+        memo=f"filesforsats: {product.name} [{purchase.id[:8]}]",
     )
 
     purchase.payment_hash = payment.payment_hash
@@ -254,20 +254,20 @@ async def create_purchase_invoice(
 
 async def payment_received(payment: Payment) -> bool:
     """
-    Called when a files4sats invoice is confirmed paid.
+    Called when a filesforsats invoice is confirmed paid.
     Marks the Purchase as paid so the download endpoint can serve the file.
     """
     purchase_id = payment.extra.get("purchase_id")
     if not purchase_id:
-        logger.warning("files4sats: payment has no purchase_id in extra.")
+        logger.warning("filesforsats: payment has no purchase_id in extra.")
         return False
 
     purchase = await get_purchase_by_payment_hash(payment.payment_hash)
     if not purchase:
-        logger.warning(f"files4sats: no purchase found for hash {payment.payment_hash}")
+        logger.warning(f"filesforsats: no purchase found for hash {payment.payment_hash}")
         return False
 
     purchase.paid = True
     await update_purchase(purchase)
-    logger.info(f"files4sats: purchase {purchase.id} marked as paid.")
+    logger.info(f"filesforsats: purchase {purchase.id} marked as paid.")
     return True

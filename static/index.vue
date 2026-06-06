@@ -80,7 +80,7 @@
     <div class="col-12 col-md-4 col-lg-3 q-gutter-y-md">
       <q-card>
         <q-card-section>
-          <h6 class="text-subtitle1 q-my-none">files4sats</h6>
+          <h6 class="text-subtitle1 q-my-none">filesforsats</h6>
           <p class="q-mt-sm">
             Sell digital files via Lightning. Upload a file, set a price, and
             share the public link (and optionally the integrity code) with your buyer.

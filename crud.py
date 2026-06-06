@@ -1,5 +1,5 @@
 """
-CRUD layer for files4sats.
+CRUD layer for filesforsats.
 All DB interactions are isolated here so views_api stays clean.
 """
 

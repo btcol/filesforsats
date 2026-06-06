@@ -22,8 +22,8 @@ async def wait_for_paid_invoices():
 async def on_invoice_paid(payment: Payment) -> None:
     if payment.extra.get("tag") != "filesforsats":
         return
-    logger.info(f"files4sats: invoice paid — hash={payment.payment_hash}")
+    logger.info(f"filesforsats: invoice paid — hash={payment.payment_hash}")
     try:
         await payment_received(payment)
     except Exception as exc:
-        logger.error(f"files4sats: error processing payment: {exc}")
+        logger.error(f"filesforsats: error processing payment: {exc}")

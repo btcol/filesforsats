@@ -359,3 +359,19 @@ async def api_download_file(payment_hash: str) -> FileResponse:
         media_type=product.mime_type,
         filename=product.file_name,
     )
+
+
+@filesforsats_api_router.get(
+    "/api/v1/about",
+    summary="Get extension configuration information (config.json)",
+)
+async def api_get_about():
+    """Reads and serves the config.json for the frontend About dialog."""
+    import json
+    from pathlib import Path
+    
+    config_path = Path(__file__).parent / "config.json"
+    if not config_path.exists():
+        return {}
+    with open(config_path, "r", encoding="utf-8") as f:
+        return json.load(f)

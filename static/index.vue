@@ -123,8 +123,19 @@
         </q-card-section>
       </q-card>
 
+      <!-- ═══════════════════════ ABOUT BUTTON ══════════════════════════ -->
+      <q-card class="q-mt-md">
+        <q-card-section>
+          <q-btn
+            outline color="primary" icon="info"
+            label="About this App" class="full-width"
+            @click="showAboutDialog"
+          />
+        </q-card-section>
+      </q-card>
+
       <!-- ═══════════ ADMIN SETTINGS BUTTON (superuser only) ═════════════ -->
-      <q-card v-if="g.user.admin">
+      <q-card v-if="g.user.admin" class="q-mt-md">
         <q-card-section>
           <q-btn
             unelevated color="primary" icon="admin_panel_settings"
@@ -265,6 +276,42 @@
           <q-btn @click="saveAdminSettings" unelevated color="primary"
             :loading="adminForm.loading">Save</q-btn>
           <q-btn v-close-popup flat color="grey" class="q-ml-auto">Cancel</q-btn>
+        </div>
+      </q-card>
+    </q-dialog>
+
+    <!-- ════════════════════════ ABOUT APP DIALOG ═══════════════════════ -->
+    <q-dialog v-model="aboutDialog.show" position="top">
+      <q-card class="q-pa-lg q-pt-md lnbits__dialog-card" style="min-width: 480px" v-if="aboutDialog.config">
+        <span class="text-h5 q-mb-md block">${aboutDialog.config.name} <span class="text-caption text-grey">v${aboutDialog.config.version}</span></span>
+
+        <q-card-section class="q-pa-none q-gutter-y-md">
+          <p class="text-body2 text-grey-8">${aboutDialog.config.short_description}</p>
+          
+          <div class="column q-gutter-y-md" v-if="aboutDialog.config.images && aboutDialog.config.images.length > 0">
+            <q-img v-if="aboutDialog.config.images[0].uri" :src="aboutDialog.config.images[0].uri" style="max-height: 200px" fit="contain" class="rounded-borders" />
+            
+            <q-btn v-if="aboutDialog.config.images[0].link" outline color="red" icon="play_circle" label="Watch Video Tutorial" class="full-width" :href="aboutDialog.config.images[0].link" target="_blank" />
+          </div>
+
+          <div v-if="aboutDialog.config.contributors && aboutDialog.config.contributors.length > 0">
+            <p class="text-subtitle2 q-mt-md q-mb-xs">Developed by:</p>
+            <q-list dense>
+              <q-item v-for="c in aboutDialog.config.contributors" :key="c.name" :href="c.uri" tag="a" target="_blank" clickable>
+                <q-item-section avatar>
+                  <q-icon name="code" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>${c.name}</q-item-label>
+                  <q-item-label caption>${c.role}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </div>
+        </q-card-section>
+
+        <div class="row q-mt-lg justify-end">
+          <q-btn v-close-popup flat color="primary">Close</q-btn>
         </div>
       </q-card>
     </q-dialog>

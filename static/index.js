@@ -57,6 +57,12 @@ window.PageFilesforsats = {
       },
       adminDialog: false,
 
+      // ── About App ───────────────────────────────────────────────────────
+      aboutDialog: {
+        show: false,
+        config: null
+      },
+
       // ── Storage Quota ───────────────────────────────────────────────────
       storageUsage: {
         used_bytes: 0,
@@ -301,6 +307,21 @@ window.PageFilesforsats = {
         this.storageUsage = data
       } catch (err) {
         console.warn('filesforsats: could not load storage usage', err)
+      }
+    },
+
+    // ── About ─────────────────────────────────────────────────────────────
+    async showAboutDialog() {
+      try {
+        const { data } = await LNbits.api.request(
+          'GET',
+          '/filesforsats/api/v1/about',
+          this.g.user.wallets[0].adminkey
+        )
+        this.aboutDialog.config = data
+        this.aboutDialog.show = true
+      } catch (err) {
+        LNbits.utils.notifyApiError(err)
       }
     }
   },

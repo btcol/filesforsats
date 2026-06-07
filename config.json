@@ -4,6 +4,13 @@
   "tile": "/filesforsats/static/image/filesforsats.png",
   "version": "0.0.1",
   "min_lnbits_version": "1.4.2",
+  "repo": "https://github.com/btcol/filesforsats",
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/btcol/filesforsats"
+    }
+  ],
   "contributors": [
     {
       "name": "btcol",
@@ -13,11 +20,11 @@
   ],
   "images": [
     {
-      "uri": "https://raw.githubusercontent.com/lnbits/filesforsats/main/static/image/BTCOL.png",
+      "uri": "https://raw.githubusercontent.com/btcol/filesforsats/main/static/image/BTCOL.png",
       "link": "https://www.youtube.com/watch?v=MtfZBTD71x4&t=1s"
     }
   ],
   "description_md": "This project is an LNbits extension that enables merchants to sell digital files through Lightning payments with a secure, privacy-preserving delivery flow. A seller can upload a single file, configure a price, generate a public share link, and require the buyer to validate a private integrity code before the invoice is revealed; once the payment is confirmed, the system unlocks a download endpoint.",
-  "terms_and_conditions_md": "https://raw.githubusercontent.com/lnbits/filesforsats/main/toc.md",
+  "terms_and_conditions_md": "https://raw.githubusercontent.com/btcol/filesforsats/main/toc.md",
   "license": "MIT"
 }

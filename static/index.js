@@ -40,7 +40,41 @@ window.PageFilesforsats = {
         hash: '',
         shareLink: '',
         copied: false
+      },
+
+      // ── admin settings (fetched on mount for admins) ──────────────────
+      adminSettings: {
+        commission_percent: 0,
+        commission_wallet_id: '',
+        unlock_monthly: false
+      },
+      adminForm: {
+        commission_percent: 0,
+        commission_wallet_id: null,
+        unlock_monthly: false,
+        storage_quota_mb: 1024,
+        loading: false
+      },
+      adminDialog: false,
+
+      // ── Storage Quota ───────────────────────────────────────────────────
+      storageUsage: {
+        used_bytes: 0,
+        limit_bytes: 1073741824
       }
+    }
+  },
+
+  computed: {
+    formattedStorageUsage() {
+      const mbUsed = (this.storageUsage.used_bytes / (1024 * 1024)).toFixed(2)
+      const mbLimit = (this.storageUsage.limit_bytes / (1024 * 1024)).toFixed(0)
+      return `${mbUsed} MB / ${mbLimit} MB`
+    },
+    storageProgress() {
+      if (this.storageUsage.limit_bytes === 0) return 0
+      const progress = this.storageUsage.used_bytes / this.storageUsage.limit_bytes
+      return Math.min(progress, 1)
     }
   },
 
@@ -135,6 +169,7 @@ window.PageFilesforsats = {
 
         this.productDialog.show = false
         await this.getProducts()
+        await this.loadStorageUsage() // Update storage bar
         Quasar.Notify.create({ type: 'positive', message: 'Product created successfully!' })
       } catch (err) {
         Quasar.Notify.create({ type: 'negative', message: err.message || 'Failed to create product.' })
@@ -191,6 +226,7 @@ window.PageFilesforsats = {
           try {
             await LNbits.api.request('DELETE', `/filesforsats/api/v1/products/${productId}`, null)
             await this.getProducts()
+            await this.loadStorageUsage() // Update storage bar
             Quasar.Notify.create({ type: 'positive', message: 'Product deleted.' })
           } catch (err) {
             LNbits.utils.notifyApiError(err)
@@ -209,10 +245,69 @@ window.PageFilesforsats = {
     async exportProductsCSV() {
       await LNbits.utils.exportCSV(this.productsTable.columns, this.productsList,
         'filesforsats_products_' + new Date().toISOString().slice(0, 10) + '.csv')
+    },
+
+    // ── Admin settings ───────────────────────────────────────────────────────
+    async loadAdminSettings() {
+      if (!this.g.user.admin) return
+      try {
+        const { data } = await LNbits.api.request(
+          'GET',
+          '/filesforsats/api/v1/admin/settings',
+          this.g.user.wallets[0].adminkey
+        )
+        this.adminSettings = data
+        this.adminForm.commission_percent = data.commission_percent
+        this.adminForm.commission_wallet_id = data.commission_wallet_id || null
+        this.adminForm.unlock_monthly = data.unlock_monthly
+        this.adminForm.storage_quota_mb = data.storage_quota_mb
+      } catch (err) {
+        console.warn('filesforsats: could not load admin settings', err)
+      }
+    },
+
+    async saveAdminSettings() {
+      this.adminForm.loading = true
+      try {
+        const payload = {
+          commission_percent: this.adminForm.commission_percent || 0,
+          commission_wallet_id: this.adminForm.commission_wallet_id || '',
+          unlock_monthly: this.adminForm.unlock_monthly,
+          storage_quota_mb: this.adminForm.storage_quota_mb || 1024
+        }
+        const { data } = await LNbits.api.request(
+          'PUT',
+          '/filesforsats/api/v1/admin/settings',
+          this.g.user.wallets[0].adminkey,
+          payload
+        )
+        this.adminSettings = data
+        Quasar.Notify.create({ type: 'positive', message: 'Admin settings saved!' })
+      } catch (err) {
+        LNbits.utils.notifyApiError(err)
+      } finally {
+        this.adminForm.loading = false
+      }
+    },
+
+    // ── Storage ─────────────────────────────────────────────────────────────
+    async loadStorageUsage() {
+      try {
+        const { data } = await LNbits.api.request(
+          'GET',
+          '/filesforsats/api/v1/storage/usage',
+          this.g.user.wallets[0].adminkey
+        )
+        this.storageUsage = data
+      } catch (err) {
+        console.warn('filesforsats: could not load storage usage', err)
+      }
     }
   },
 
   async created() {
     await this.getProducts()
+    await this.loadAdminSettings()
+    await this.loadStorageUsage()
   }
 }

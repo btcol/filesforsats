@@ -68,7 +68,7 @@ def _safe_extension(filename: str) -> str:
     return Path(filename).suffix.lower()
 
 
-async def save_uploaded_file(upload: UploadFile) -> tuple[str, str, str, int, str]:
+async def save_uploaded_file(upload: UploadFile, max_allowed_bytes: int = MAX_UPLOAD_BYTES) -> tuple[str, str, str, int, str]:
     """
     Persist *upload* to disk under a UUID-based name.
 
@@ -99,13 +99,14 @@ async def save_uploaded_file(upload: UploadFile) -> tuple[str, str, str, int, st
                 if not chunk:
                     break
                 total_bytes += len(chunk)
-                if total_bytes > MAX_UPLOAD_BYTES:
+                if total_bytes > max_allowed_bytes or total_bytes > MAX_UPLOAD_BYTES:
                     fh.close()
                     dest_path.unlink(missing_ok=True)
+                    limit_mib = min(max_allowed_bytes, MAX_UPLOAD_BYTES) // (1024 * 1024)
                     raise HTTPException(
                         HTTPStatus.REQUEST_ENTITY_TOO_LARGE,
-                        f"File exceeds the maximum allowed size of "
-                        f"{MAX_UPLOAD_BYTES // (1024 * 1024)} MiB.",
+                        f"Upload exceeds the available storage limit or maximum file size "
+                        f"({limit_mib} MiB).",
                     )
                 sha256.update(chunk)
                 fh.write(chunk)
@@ -255,7 +256,9 @@ async def create_purchase_invoice(
 async def payment_received(payment: Payment) -> bool:
     """
     Called when a filesforsats invoice is confirmed paid.
-    Marks the Purchase as paid so the download endpoint can serve the file.
+    1. Marks the Purchase as paid so the download endpoint can serve the file.
+    2. If a commission is configured, automatically transfers the commission
+       amount from the seller's wallet to the admin's wallet.
     """
     purchase_id = payment.extra.get("purchase_id")
     if not purchase_id:
@@ -270,4 +273,63 @@ async def payment_received(payment: Payment) -> bool:
     purchase.paid = True
     await update_purchase(purchase)
     logger.info(f"filesforsats: purchase {purchase.id} marked as paid.")
+
+    # ── Commission transfer ──────────────────────────────────────────────────
+    await _process_commission(purchase)
+
     return True
+
+
+async def _process_commission(purchase: "Purchase") -> None:
+    """
+    Internal: if commission > 0 and a destination wallet is configured,
+    create an invoice on the admin wallet and immediately pay it from the
+    seller's wallet using an internal Lightning transfer.
+
+    Errors here are logged and swallowed so they never block the buyer's
+    file download.
+    """
+    from .crud import get_admin_settings, get_product  # lazy import to avoid circular
+
+    try:
+        admin_cfg = await get_admin_settings()
+        if not admin_cfg.commission_percent or not admin_cfg.commission_wallet_id:
+            return  # no commission configured — nothing to do
+
+        product = await get_product(purchase.product_id)
+        if not product:
+            logger.warning("filesforsats commission: product not found, skipping.")
+            return
+
+        commission_sats = int(product.price_sats * admin_cfg.commission_percent / 100)
+        if commission_sats < 1:
+            return  # amount rounds to 0 sats — skip
+
+        from lnbits.core.services import create_invoice, pay_invoice  # type: ignore
+
+        # 1. Create an invoice on the admin's wallet.
+        admin_invoice: Payment = await create_invoice(
+            wallet_id=admin_cfg.commission_wallet_id,
+            amount=commission_sats,
+            currency="sat",
+            memo=(
+                f"filesforsats commission {admin_cfg.commission_percent}% "
+                f"on product {product.name[:40]} [{purchase.id[:8]}]"
+            ),
+        )
+
+        # 2. Pay it from the seller's wallet (internal transfer — no network fees).
+        await pay_invoice(
+            wallet_id=product.wallet_id,
+            payment_request=admin_invoice.bolt11,
+            tag="filesforsats",
+            extra={"tag": "filesforsats_commission", "purchase_id": purchase.id},
+        )
+
+        logger.info(
+            f"filesforsats: commission of {commission_sats} sats transferred "
+            f"for purchase {purchase.id}."
+        )
+
+    except Exception as exc:
+        logger.error(f"filesforsats: commission transfer failed for purchase {purchase.id}: {exc}")

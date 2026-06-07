@@ -1,7 +1,36 @@
 from datetime import datetime, timezone
 
 from lnbits.db import FilterModel
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
+
+
+# ---------------------------------------------------------------------------
+# Admin Settings — single-row configuration owned by the extension admin
+# ---------------------------------------------------------------------------
+
+
+class AdminSettings(BaseModel):
+    """The extension-level admin configuration (stored as a single DB row)."""
+
+    id: int = 1
+    commission_percent: float = Field(0.0, ge=0, le=100)
+    commission_wallet_id: str = ""
+    unlock_monthly: bool = False
+    storage_quota_mb: int = Field(1024, ge=1)
+
+
+class UpdateAdminSettings(BaseModel):
+    """Payload for PUT /api/v1/admin/settings."""
+
+    commission_percent: float = Field(0.0, ge=0, le=100)
+    commission_wallet_id: str = ""
+    unlock_monthly: bool = False
+    storage_quota_mb: int = Field(1024, ge=1)
+
+    @validator("commission_percent")
+    def _round_percent(cls, v):
+        return round(v, 4)
+
 
 
 # ---------------------------------------------------------------------------
@@ -48,6 +77,8 @@ class PublicProduct(BaseModel):
     file_name: str
     file_size: int
     mime_type: str
+    commission_percent: float = 0.0  # Informational: shown to seller, never used for payment calc on client
+
 
 
 class ProductFilters(FilterModel):

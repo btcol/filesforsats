@@ -28,24 +28,30 @@ from fastapi.responses import FileResponse
 from lnbits.core.models import SimpleStatus
 from lnbits.core.models.users import AccountId
 from lnbits.db import Filters, Page
-from lnbits.decorators import check_account_id_exists, parse_filters
+from lnbits.decorators import check_account_id_exists, check_admin, parse_filters
 from lnbits.helpers import generate_filter_params_openapi, urlsafe_short_hash
 
 from .crud import (
     create_product,
     delete_product,
+    get_admin_settings,
     get_product,
     get_product_owned,
     get_products_paginated,
     get_purchase_by_payment_hash,
+    get_user_storage_usage,
+    upsert_admin_settings,
+    upsert_unlock_record,
 )
 from .models import (
+    AdminSettings,
     CreateInvoiceRequest,
     InvoiceResponse,
     PaymentStatusResponse,
     Product,
     ProductFilters,
     PublicProduct,
+    UpdateAdminSettings,
     VerifyIntegrityRequest,
     VerifyIntegrityResponse,
 )
@@ -64,8 +70,53 @@ filesforsats_api_router = APIRouter()
 
 
 # ===========================================================================
-# Seller endpoints (authenticated)
+# Admin-only endpoints
 # ===========================================================================
+
+
+@filesforsats_api_router.get(
+    "/api/v1/admin/settings",
+    summary="Get admin settings (commission & unlock mode)",
+    response_model=AdminSettings,
+    dependencies=[Depends(check_admin)],
+)
+async def api_get_admin_settings() -> AdminSettings:
+    return await get_admin_settings()
+
+
+@filesforsats_api_router.put(
+    "/api/v1/admin/settings",
+    summary="Update admin settings (commission & unlock mode)",
+    response_model=AdminSettings,
+    dependencies=[Depends(check_admin)],
+)
+async def api_update_admin_settings(body: UpdateAdminSettings) -> AdminSettings:
+    current = await get_admin_settings()
+    updated = AdminSettings(
+        id=current.id,
+        commission_percent=body.commission_percent,
+        commission_wallet_id=body.commission_wallet_id,
+        unlock_monthly=body.unlock_monthly,
+    )
+    return await upsert_admin_settings(updated)
+
+
+@filesforsats_api_router.post(
+    "/api/v1/unlock/confirm",
+    summary="Record a successful extension unlock payment for a user",
+    response_model=SimpleStatus,
+    dependencies=[Depends(check_account_id_exists)],
+)
+async def api_confirm_unlock(
+    account_id: AccountId = Depends(check_account_id_exists),
+) -> SimpleStatus:
+    """
+    Called by the frontend immediately after the user's pay-to-enable invoice
+    is confirmed paid.  Stamps the current UTC time in unlock_records so
+    the monthly-expiry background task knows when the 30-day window began.
+    """
+    await upsert_unlock_record(account_id.id)
+    return SimpleStatus(success=True, message="Unlock timestamp recorded.")
 
 
 @filesforsats_api_router.post(
@@ -92,7 +143,22 @@ async def api_create_product(
     if not file.filename:
         raise HTTPException(HTTPStatus.BAD_REQUEST, "No file provided.")
 
-    original_name, storage_name, mime_type, file_size, sha256_hash = await save_uploaded_file(file)
+    admin_cfg = await get_admin_settings()
+    MAX_QUOTA_BYTES = admin_cfg.storage_quota_mb * 1024 * 1024
+    used_bytes = await get_user_storage_usage(account_id.id)
+    remaining_bytes = max(0, MAX_QUOTA_BYTES - used_bytes)
+
+    if remaining_bytes <= 0:
+        raise HTTPException(
+            HTTPStatus.REQUEST_ENTITY_TOO_LARGE,
+            "Storage quota exceeded. Please delete some files to free up space."
+        )
+
+    # 2. Process and save the uploaded file, enforcing the remaining quota
+    original_name, storage_name, mime_type, file_size, sha256_hash = await save_uploaded_file(
+        file,
+        max_allowed_bytes=remaining_bytes
+    )
 
     product = Product(
         id=urlsafe_short_hash(),
@@ -109,6 +175,24 @@ async def api_create_product(
         require_integrity=require_integrity,
     )
     return await create_product(product)
+
+
+@filesforsats_api_router.get(
+    "/api/v1/storage/usage",
+    summary="Get user's total storage usage",
+    dependencies=[Depends(check_account_id_exists)],
+)
+async def api_get_storage_usage(
+    account_id: AccountId = Depends(check_account_id_exists),
+) -> dict:
+    admin_cfg = await get_admin_settings()
+    used_bytes = await get_user_storage_usage(account_id.id)
+    limit_bytes = admin_cfg.storage_quota_mb * 1024 * 1024
+
+    return {
+        "used_bytes": used_bytes,
+        "limit_bytes": limit_bytes,
+    }
 
 
 @filesforsats_api_router.get(
@@ -172,7 +256,9 @@ async def api_get_public_product(product_id: str) -> PublicProduct:
     product = await get_product(product_id)
     if not product:
         raise HTTPException(HTTPStatus.NOT_FOUND, "Product not found.")
-    # PublicProduct deliberately omits sha256_hash
+    admin_cfg = await get_admin_settings()
+    # PublicProduct deliberately omits sha256_hash.
+    # commission_percent is exposed so a seller-side banner can display the rate.
     return PublicProduct(
         id=product.id,
         name=product.name,
@@ -182,6 +268,7 @@ async def api_get_public_product(product_id: str) -> PublicProduct:
         file_name=product.file_name,
         file_size=product.file_size,
         mime_type=product.mime_type,
+        commission_percent=admin_cfg.commission_percent,
     )
 
 

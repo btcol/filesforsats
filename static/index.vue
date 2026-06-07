@@ -85,6 +85,26 @@
             Sell digital files via Lightning. Upload a file, set a price, and
             share the public link (and optionally the integrity code) with your buyer.
           </p>
+          <!-- Commission info banner for sellers -->
+          <q-banner v-if="adminSettings.commission_percent > 0" class="bg-orange-1 text-orange-9 q-mt-sm" rounded dense>
+            <template v-slot:avatar><q-icon name="info" color="orange" /></template>
+            A <strong>${ adminSettings.commission_percent }%</strong> platform commission
+            is automatically deducted from each sale.
+          </q-banner>
+          <!-- Storage Quota UI -->
+          <div class="q-mt-md">
+            <div class="row items-center justify-between q-mb-xs">
+              <span class="text-caption text-weight-medium">Storage Quota</span>
+              <span class="text-caption text-grey-8">${ formattedStorageUsage }</span>
+            </div>
+            <q-linear-progress 
+              :value="storageProgress" 
+              :color="storageProgress >= 0.9 ? 'negative' : (storageProgress >= 0.75 ? 'warning' : 'primary')"
+              rounded
+              size="10px"
+              class="q-mt-sm"
+            />
+          </div>
         </q-card-section>
         <q-separator></q-separator>
         <q-card-section class="q-pa-none">
@@ -102,6 +122,18 @@
           </q-list>
         </q-card-section>
       </q-card>
+
+      <!-- ═══════════ ADMIN SETTINGS BUTTON (superuser only) ═════════════ -->
+      <q-card v-if="g.user.admin">
+        <q-card-section>
+          <q-btn
+            unelevated color="primary" icon="admin_panel_settings"
+            label="Admin Settings" class="full-width"
+            @click="adminDialog = true"
+          />
+        </q-card-section>
+      </q-card>
+
     </div>
 
     <!-- ══════════════════════════ CREATE PRODUCT DIALOG ════════════════════ -->
@@ -189,6 +221,51 @@
         <q-card-actions align="right">
           <q-btn flat label="Close" v-close-popup color="primary"></q-btn>
         </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- ══════════════════════ ADMIN SETTINGS DIALOG ══════════════════════ -->
+    <q-dialog v-model="adminDialog" position="top">
+      <q-card class="q-pa-lg q-pt-md lnbits__dialog-card" style="min-width: 480px">
+        <span class="text-h5 q-mb-md block">Admin Settings</span>
+
+        <q-card-section class="q-pa-none q-gutter-y-md">
+          <q-input filled dense v-model.number="adminForm.commission_percent"
+            label="Commission % per sale" type="number" min="0" max="100" step="0.01">
+            <template v-slot:append>
+              <q-icon name="help_outline" class="cursor-pointer">
+                <q-tooltip>Set to 0 to disable. This percentage is automatically deducted from each sale and sent to the commission wallet.</q-tooltip>
+              </q-icon>
+            </template>
+          </q-input>
+
+          <q-select filled dense emit-value map-options
+            v-model="adminForm.commission_wallet_id"
+            :options="g.user.walletOptions"
+            label="Commission wallet" />
+
+          <q-input filled dense v-model.number="adminForm.storage_quota_mb"
+            label="Storage quota per user (MB)" type="number" min="1" step="1">
+            <template v-slot:append>
+              <q-icon name="help_outline" class="cursor-pointer">
+                <q-tooltip>Maximum storage space allowed per user in megabytes. Default is 1024 MB (1 GB).</q-tooltip>
+              </q-icon>
+            </template>
+          </q-input>
+
+          <div>
+            <q-toggle v-model="adminForm.unlock_monthly" color="orange"
+              :label="adminForm.unlock_monthly ? 'Unlock: Monthly renewal' : 'Unlock: One-time payment'">
+              <q-tooltip>OFF = sellers pay once forever. ON = sellers must renew every month.</q-tooltip>
+            </q-toggle>
+          </div>
+        </q-card-section>
+
+        <div class="row q-mt-lg">
+          <q-btn @click="saveAdminSettings" unelevated color="primary"
+            :loading="adminForm.loading">Save</q-btn>
+          <q-btn v-close-popup flat color="grey" class="q-ml-auto">Cancel</q-btn>
+        </div>
       </q-card>
     </q-dialog>
 

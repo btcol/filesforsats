@@ -5,7 +5,7 @@ from lnbits.tasks import create_permanent_unique_task
 from loguru import logger
 
 from .crud import db
-from .tasks import wait_for_paid_invoices
+from .tasks import check_monthly_unlocks, wait_for_paid_invoices
 from .views import filesforsats_generic_router
 from .views_api import filesforsats_api_router
 
@@ -35,8 +35,11 @@ def filesforsats_stop():
 
 
 def filesforsats_start():
-    task = create_permanent_unique_task("ext_filesforsats", wait_for_paid_invoices)
-    scheduled_tasks.append(task)
+    task1 = create_permanent_unique_task("ext_filesforsats", wait_for_paid_invoices)
+    task2 = create_permanent_unique_task(
+        "ext_filesforsats_monthly_unlock", check_monthly_unlocks
+    )
+    scheduled_tasks.extend([task1, task2])
 
 
 __all__ = [

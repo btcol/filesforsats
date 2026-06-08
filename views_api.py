@@ -96,6 +96,7 @@ async def api_update_admin_settings(body: UpdateAdminSettings) -> AdminSettings:
         commission_percent=body.commission_percent,
         commission_wallet_id=body.commission_wallet_id,
         unlock_monthly=body.unlock_monthly,
+        storage_quota_mb=body.storage_quota_mb,
     )
     return await upsert_admin_settings(updated)
 

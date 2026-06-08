@@ -132,7 +132,7 @@ async def get_admin_settings() -> AdminSettings:
         AdminSettings,
     )
     if row is None:
-        row = AdminSettings()
+        row = AdminSettings(commission_percent=0.0, storage_quota_mb=1024)
         await db.insert("filesforsats.admin_settings", row)
     return row
 
@@ -144,13 +144,15 @@ async def upsert_admin_settings(settings: AdminSettings) -> AdminSettings:
         UPDATE filesforsats.admin_settings
            SET commission_percent     = :commission_percent,
                commission_wallet_id   = :commission_wallet_id,
-               unlock_monthly         = :unlock_monthly
+               unlock_monthly         = :unlock_monthly,
+               storage_quota_mb       = :storage_quota_mb
          WHERE id = 1
         """,
         {
             "commission_percent": settings.commission_percent,
             "commission_wallet_id": settings.commission_wallet_id,
             "unlock_monthly": settings.unlock_monthly,
+            "storage_quota_mb": settings.storage_quota_mb,
         },
     )
     return settings

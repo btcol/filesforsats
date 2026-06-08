@@ -94,3 +94,17 @@ Then enable the extension from the LNbits admin panel.
 ## License
 
 MIT — see [LICENSE](LICENSE)
+
+---
+
+## Support & Contributions ⚡️
+
+Thank you for using **filesforsats**!
+
+If you find this extension useful and would like to support its ongoing development, maintenance, and new features, please consider making a Lightning donation. Your contributions directly help keep this project alive and continuously improving.
+
+Every satoshi is deeply appreciated! 🧡
+
+<div align="center">
+  <img src="./filesforsats.svg" alt="Donate with Lightning" width="300"/>
+</div>

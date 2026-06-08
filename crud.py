@@ -44,7 +44,7 @@ async def get_product_owned(user_id: str, product_id: str) -> Product | None:
 
 async def get_user_storage_usage(user_id: str) -> int:
     """Returns the total file size in bytes used by all products owned by user_id."""
-    row = await db.fetchone(
+    row: dict | None = await db.fetchone(
         "SELECT SUM(file_size) as total FROM filesforsats.products WHERE user_id = :uid",
         {"uid": user_id},
     )
@@ -168,7 +168,7 @@ async def upsert_unlock_record(user_id: str) -> None:
     Called each time the user pays the enable-invoice so the 30-day
     clock restarts on monthly renewals.
     """
-    existing = await db.fetchone(
+    existing: dict | None = await db.fetchone(
         "SELECT user_id FROM filesforsats.unlock_records WHERE user_id = :uid",
         {"uid": user_id},
     )
@@ -198,7 +198,7 @@ async def get_expired_unlock_records(cutoff_iso: str) -> list[dict]:
     (ISO-8601 string, UTC) and are still marked active.
     Used by the monthly-expiry background task.
     """
-    rows = await db.fetchall(
+    rows: list[dict] = await db.fetchall(
         """
         SELECT user_id, paid_at
           FROM filesforsats.unlock_records

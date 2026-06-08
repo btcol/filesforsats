@@ -23,7 +23,7 @@ from .services import payment_received
 _EXPIRY_CHECK_INTERVAL_SECONDS = 3600  # run every hour
 
 
-async def wait_for_paid_invoices():
+async def wait_for_paid_invoices() -> None:
     invoice_queue: asyncio.Queue = asyncio.Queue()
     register_invoice_listener(invoice_queue, "ext_filesforsats")
     while True:

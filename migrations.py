@@ -119,16 +119,8 @@ async def m006_add_currency_columns(db):
     Existing rows keep price_sats; price is back-filled from price_sats so that
     sat-priced products continue to work without data loss.
     """
-    await db.execute(
-        "ALTER TABLE filesforsats.products ADD COLUMN price REAL NOT NULL DEFAULT 0;"
-    )
-    await db.execute(
-        "ALTER TABLE filesforsats.products ADD COLUMN currency TEXT NOT NULL DEFAULT 'sat';"
-    )
+    await db.execute("ALTER TABLE filesforsats.products ADD COLUMN price REAL NOT NULL DEFAULT 0;")
+    await db.execute("ALTER TABLE filesforsats.products ADD COLUMN currency TEXT NOT NULL DEFAULT 'sat';")
     # Back-fill price from the legacy integer column so existing products work
-    await db.execute(
-        "UPDATE filesforsats.products SET price = CAST(price_sats AS REAL) WHERE price = 0;"
-    )
-    await db.execute(
-        "ALTER TABLE filesforsats.admin_settings ADD COLUMN default_currency TEXT NOT NULL DEFAULT 'sat';"
-    )
+    await db.execute("UPDATE filesforsats.products SET price = CAST(price_sats AS REAL) WHERE price = 0;")
+    await db.execute("ALTER TABLE filesforsats.admin_settings ADD COLUMN default_currency TEXT NOT NULL DEFAULT 'sat';")

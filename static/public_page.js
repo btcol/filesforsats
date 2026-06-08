@@ -4,7 +4,7 @@ window.PageFilesforsatsPublic = {
   data: function () {
     return {
       productId: '',
-      product: null,        // PublicProduct — no hash inside
+      product: null, // PublicProduct — no hash inside
       loadError: false,
 
       // Buyer flow state machine
@@ -43,12 +43,14 @@ window.PageFilesforsatsPublic = {
     // ── 1. Load product info ─────────────────────────────────────────────────
     async fetchProduct() {
       try {
-        const { data } = await LNbits.api.request(
+        const {data} = await LNbits.api.request(
           'GET',
           `/filesforsats/api/v1/products/${this.productId}/public`
         )
         this.product = data
-        this.step = this.product.require_integrity ? 'integrity_required' : 'ready_for_invoice'
+        this.step = this.product.require_integrity
+          ? 'integrity_required'
+          : 'ready_for_invoice'
       } catch (err) {
         this.loadError = true
         this.step = 'error'
@@ -65,11 +67,11 @@ window.PageFilesforsatsPublic = {
       this.integrityLoading = true
       this.integrityError = ''
       try {
-        const { data } = await LNbits.api.request(
+        const {data} = await LNbits.api.request(
           'POST',
           `/filesforsats/api/v1/products/${this.productId}/verify`,
           null,
-          { code: this.integrityCode.trim() }
+          {code: this.integrityCode.trim()}
         )
         this.integrityToken = data.integrity_token
         this.step = 'integrity_ok'
@@ -77,7 +79,8 @@ window.PageFilesforsatsPublic = {
         // Never show the expected hash — only generic messages
         const status = err?.response?.status
         if (status === 422) {
-          this.integrityError = 'Invalid integrity code. Please check and try again.'
+          this.integrityError =
+            'Invalid integrity code. Please check and try again.'
         } else {
           this.integrityError = 'Verification failed. Please try again later.'
         }
@@ -90,11 +93,11 @@ window.PageFilesforsatsPublic = {
     async createInvoice() {
       this.invoiceLoading = true
       try {
-        const { data } = await LNbits.api.request(
+        const {data} = await LNbits.api.request(
           'POST',
           `/filesforsats/api/v1/products/${this.productId}/invoice`,
           null,
-          { integrity_token: this.integrityToken || '' }
+          {integrity_token: this.integrityToken || ''}
         )
         this.paymentRequest = data.payment_request
         this.paymentHash = data.payment_hash
@@ -115,7 +118,7 @@ window.PageFilesforsatsPublic = {
         url.protocol = url.protocol === 'https:' ? 'wss' : 'ws'
         url.pathname = `/api/v1/ws/${paymentHash}`
         const ws = new WebSocket(url)
-        ws.addEventListener('message', async ({ data }) => {
+        ws.addEventListener('message', async ({data}) => {
           const msg = JSON.parse(data)
           if (msg.pending === false) {
             ws.close()
@@ -127,7 +130,10 @@ window.PageFilesforsatsPublic = {
           this.startPolling(paymentHash)
         })
         // Also start a polling safety net in case the WS disconnects
-        this._pollInterval = setInterval(() => this.pollStatus(paymentHash), 5000)
+        this._pollInterval = setInterval(
+          () => this.pollStatus(paymentHash),
+          5000
+        )
       } catch (_) {
         this.startPolling(paymentHash)
       }
@@ -139,7 +145,7 @@ window.PageFilesforsatsPublic = {
 
     async pollStatus(paymentHash) {
       try {
-        const { data } = await LNbits.api.request(
+        const {data} = await LNbits.api.request(
           'GET',
           `/filesforsats/api/v1/purchases/${paymentHash}/status`
         )
@@ -147,14 +153,19 @@ window.PageFilesforsatsPublic = {
           clearInterval(this._pollInterval)
           await this.onPaymentConfirmed()
         }
-      } catch (_) { /* silent — will retry */ }
+      } catch (_) {
+        /* silent — will retry */
+      }
     },
 
     async onPaymentConfirmed() {
       clearInterval(this._pollInterval)
       this.step = 'paid'
       this.downloadReady = true
-      Quasar.Notify.create({ type: 'positive', message: 'Payment confirmed! Your download is ready.' })
+      Quasar.Notify.create({
+        type: 'positive',
+        message: 'Payment confirmed! Your download is ready.'
+      })
     },
 
     // ── 5. Trigger download ──────────────────────────────────────────────────

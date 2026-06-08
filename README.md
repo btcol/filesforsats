@@ -24,15 +24,15 @@
 
 ## Security design
 
-| Property | How it is enforced |
-|---|---|
-| Hash never shown to buyer | `PublicProduct` API model excludes `sha256_hash` by design |
-| Timing-safe code comparison | `hmac.compare_digest()` — prevents timing attacks |
-| No public file URLs | Files are stored outside `static/` and served only through a guarded endpoint |
-| Payment validated server-side | Download endpoint checks `purchase.paid == True` in the database before serving |
-| Integrity bypass prevented | Invoice creation re-validates the `integrity_token` server-side — frontend state is never trusted |
-| Path traversal blocked | Uploaded files are renamed to UUIDs; resolved path is checked to stay within the storage directory |
-| Large file support | Files are streamed to disk in 64 KiB chunks — no full-file RAM load |
+| Property                      | How it is enforced                                                                                 |
+| ----------------------------- | -------------------------------------------------------------------------------------------------- |
+| Hash never shown to buyer     | `PublicProduct` API model excludes `sha256_hash` by design                                         |
+| Timing-safe code comparison   | `hmac.compare_digest()` — prevents timing attacks                                                  |
+| No public file URLs           | Files are stored outside `static/` and served only through a guarded endpoint                      |
+| Payment validated server-side | Download endpoint checks `purchase.paid == True` in the database before serving                    |
+| Integrity bypass prevented    | Invoice creation re-validates the `integrity_token` server-side — frontend state is never trusted  |
+| Path traversal blocked        | Uploaded files are renamed to UUIDs; resolved path is checked to stay within the storage directory |
+| Large file support            | Files are streamed to disk in 64 KiB chunks — no full-file RAM load                                |
 
 ---
 
@@ -77,17 +77,17 @@ Then enable the extension from the LNbits admin panel.
 
 ## API overview
 
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| `POST` | `/api/v1/products` | Seller | Upload file and create product (multipart) |
-| `GET` | `/api/v1/products/paginated` | Seller | List products |
-| `GET` | `/api/v1/products/{id}` | Seller | Get product detail (includes SHA-256) |
-| `DELETE` | `/api/v1/products/{id}` | Seller | Delete product and file |
-| `GET` | `/api/v1/products/{id}/public` | Public | Get buyer-safe product info (no hash) |
-| `POST` | `/api/v1/products/{id}/verify` | Public | Submit integrity code, receive token |
-| `POST` | `/api/v1/products/{id}/invoice` | Public | Create Lightning invoice |
-| `GET` | `/api/v1/purchases/{hash}/status` | Public | Poll payment status |
-| `GET` | `/api/v1/download/{hash}` | Public (paid) | Download file after confirmed payment |
+| Method   | Endpoint                          | Auth          | Description                                |
+| -------- | --------------------------------- | ------------- | ------------------------------------------ |
+| `POST`   | `/api/v1/products`                | Seller        | Upload file and create product (multipart) |
+| `GET`    | `/api/v1/products/paginated`      | Seller        | List products                              |
+| `GET`    | `/api/v1/products/{id}`           | Seller        | Get product detail (includes SHA-256)      |
+| `DELETE` | `/api/v1/products/{id}`           | Seller        | Delete product and file                    |
+| `GET`    | `/api/v1/products/{id}/public`    | Public        | Get buyer-safe product info (no hash)      |
+| `POST`   | `/api/v1/products/{id}/verify`    | Public        | Submit integrity code, receive token       |
+| `POST`   | `/api/v1/products/{id}/invoice`   | Public        | Create Lightning invoice                   |
+| `GET`    | `/api/v1/purchases/{hash}/status` | Public        | Poll payment status                        |
+| `GET`    | `/api/v1/download/{hash}`         | Public (paid) | Download file after confirmed payment      |
 
 ---
 

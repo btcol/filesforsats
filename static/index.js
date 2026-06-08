@@ -9,13 +9,49 @@ window.PageFilesforsats = {
         search: '',
         loading: false,
         columns: [
-          { name: 'name', align: 'left', label: 'Name', field: 'name', sortable: true },
-          { name: 'price_sats', align: 'right', label: 'Price (sats)', field: 'price_sats', sortable: true },
-          { name: 'file_name', align: 'left', label: 'File', field: 'file_name', sortable: false },
-          { name: 'require_integrity', align: 'center', label: 'Integrity gate', field: 'require_integrity', sortable: true },
-          { name: 'updated_at', align: 'left', label: 'Updated', field: 'updated_at', sortable: true },
+          {
+            name: 'name',
+            align: 'left',
+            label: 'Name',
+            field: 'name',
+            sortable: true
+          },
+          {
+            name: 'price_sats',
+            align: 'right',
+            label: 'Price (sats)',
+            field: 'price_sats',
+            sortable: true
+          },
+          {
+            name: 'file_name',
+            align: 'left',
+            label: 'File',
+            field: 'file_name',
+            sortable: false
+          },
+          {
+            name: 'require_integrity',
+            align: 'center',
+            label: 'Integrity gate',
+            field: 'require_integrity',
+            sortable: true
+          },
+          {
+            name: 'updated_at',
+            align: 'left',
+            label: 'Updated',
+            field: 'updated_at',
+            sortable: true
+          }
         ],
-        pagination: { sortBy: 'updated_at', rowsPerPage: 10, page: 1, descending: true, rowsNumber: 10 }
+        pagination: {
+          sortBy: 'updated_at',
+          rowsPerPage: 10,
+          page: 1,
+          descending: true,
+          rowsNumber: 10
+        }
       },
 
       // ── create / edit dialog ──────────────────────────────────────────
@@ -79,20 +115,25 @@ window.PageFilesforsats = {
     },
     storageProgress() {
       if (this.storageUsage.limit_bytes === 0) return 0
-      const progress = this.storageUsage.used_bytes / this.storageUsage.limit_bytes
+      const progress =
+        this.storageUsage.used_bytes / this.storageUsage.limit_bytes
       return Math.min(progress, 1)
     }
   },
 
   watch: {
     'productsTable.search': {
-      handler() { this.getProducts() }
+      handler() {
+        this.getProducts()
+      }
     }
   },
 
   methods: {
     // ── UI helpers ───────────────────────────────────────────────────────
-    dateFromNow(date) { return moment(date).fromNow() },
+    dateFromNow(date) {
+      return moment(date).fromNow()
+    },
 
     formatBytes(bytes) {
       if (!bytes) return '0 B'
@@ -123,19 +164,28 @@ window.PageFilesforsats = {
       const d = this.productDialog.data
 
       if (!d.name || !d.name.trim()) {
-        Quasar.Notify.create({ type: 'negative', message: 'Product name is required.' })
+        Quasar.Notify.create({
+          type: 'negative',
+          message: 'Product name is required.'
+        })
         return
       }
       if (!d.price_sats || d.price_sats < 1) {
-        Quasar.Notify.create({ type: 'negative', message: 'Price must be at least 1 sat.' })
+        Quasar.Notify.create({
+          type: 'negative',
+          message: 'Price must be at least 1 sat.'
+        })
         return
       }
       if (!d.wallet_id) {
-        Quasar.Notify.create({ type: 'negative', message: 'Select a wallet.' })
+        Quasar.Notify.create({type: 'negative', message: 'Select a wallet.'})
         return
       }
       if (!d.file) {
-        Quasar.Notify.create({ type: 'negative', message: 'Please select a file to upload.' })
+        Quasar.Notify.create({
+          type: 'negative',
+          message: 'Please select a file to upload.'
+        })
         return
       }
 
@@ -153,12 +203,14 @@ window.PageFilesforsats = {
         const resp = await fetch('/filesforsats/api/v1/products', {
           method: 'POST',
           headers: {
-            'X-Api-Key': this.g.user.wallets.find(w => w.id === d.wallet_id)?.adminkey || ''
+            'X-Api-Key':
+              this.g.user.wallets.find(w => w.id === d.wallet_id)?.adminkey ||
+              ''
           },
           body: form
         })
         if (!resp.ok) {
-          const err = await resp.json().catch(() => ({ detail: resp.statusText }))
+          const err = await resp.json().catch(() => ({detail: resp.statusText}))
           throw new Error(err.detail || resp.statusText)
         }
         const product = await resp.json()
@@ -176,9 +228,15 @@ window.PageFilesforsats = {
         this.productDialog.show = false
         await this.getProducts()
         await this.loadStorageUsage() // Update storage bar
-        Quasar.Notify.create({ type: 'positive', message: 'Product created successfully!' })
+        Quasar.Notify.create({
+          type: 'positive',
+          message: 'Product created successfully!'
+        })
       } catch (err) {
-        Quasar.Notify.create({ type: 'negative', message: err.message || 'Failed to create product.' })
+        Quasar.Notify.create({
+          type: 'negative',
+          message: err.message || 'Failed to create product.'
+        })
       } finally {
         this.productDialog.loading = false
       }
@@ -187,8 +245,11 @@ window.PageFilesforsats = {
     async getProducts(props) {
       try {
         this.productsTable.loading = true
-        const params = LNbits.utils.prepareFilterQuery(this.productsTable, props)
-        const { data } = await LNbits.api.request(
+        const params = LNbits.utils.prepareFilterQuery(
+          this.productsTable,
+          props
+        )
+        const {data} = await LNbits.api.request(
           'GET',
           `/filesforsats/api/v1/products/paginated?${params}`,
           null
@@ -216,24 +277,37 @@ window.PageFilesforsats = {
     copyHash() {
       navigator.clipboard.writeText(this.hashDialog.hash).then(() => {
         this.hashDialog.copied = true
-        setTimeout(() => { this.hashDialog.copied = false }, 2000)
+        setTimeout(() => {
+          this.hashDialog.copied = false
+        }, 2000)
       })
     },
 
     copyShareLink() {
       navigator.clipboard.writeText(this.hashDialog.shareLink).then(() => {
-        Quasar.Notify.create({ type: 'positive', message: 'Link copied to clipboard!' })
+        Quasar.Notify.create({
+          type: 'positive',
+          message: 'Link copied to clipboard!'
+        })
       })
     },
 
     async deleteProduct(productId) {
-      await LNbits.utils.confirmDialog('Delete this product and its file permanently?')
+      await LNbits.utils
+        .confirmDialog('Delete this product and its file permanently?')
         .onOk(async () => {
           try {
-            await LNbits.api.request('DELETE', `/filesforsats/api/v1/products/${productId}`, null)
+            await LNbits.api.request(
+              'DELETE',
+              `/filesforsats/api/v1/products/${productId}`,
+              null
+            )
             await this.getProducts()
             await this.loadStorageUsage() // Update storage bar
-            Quasar.Notify.create({ type: 'positive', message: 'Product deleted.' })
+            Quasar.Notify.create({
+              type: 'positive',
+              message: 'Product deleted.'
+            })
           } catch (err) {
             LNbits.utils.notifyApiError(err)
           }
@@ -249,15 +323,20 @@ window.PageFilesforsats = {
     },
 
     async exportProductsCSV() {
-      await LNbits.utils.exportCSV(this.productsTable.columns, this.productsList,
-        'filesforsats_products_' + new Date().toISOString().slice(0, 10) + '.csv')
+      await LNbits.utils.exportCSV(
+        this.productsTable.columns,
+        this.productsList,
+        'filesforsats_products_' +
+          new Date().toISOString().slice(0, 10) +
+          '.csv'
+      )
     },
 
     // ── Admin settings ───────────────────────────────────────────────────────
     async loadAdminSettings() {
       if (!this.g.user.admin) return
       try {
-        const { data } = await LNbits.api.request(
+        const {data} = await LNbits.api.request(
           'GET',
           '/filesforsats/api/v1/admin/settings',
           this.g.user.wallets[0].adminkey
@@ -281,14 +360,17 @@ window.PageFilesforsats = {
           unlock_monthly: this.adminForm.unlock_monthly,
           storage_quota_mb: this.adminForm.storage_quota_mb || 1024
         }
-        const { data } = await LNbits.api.request(
+        const {data} = await LNbits.api.request(
           'PUT',
           '/filesforsats/api/v1/admin/settings',
           this.g.user.wallets[0].adminkey,
           payload
         )
         this.adminSettings = data
-        Quasar.Notify.create({ type: 'positive', message: 'Admin settings saved!' })
+        Quasar.Notify.create({
+          type: 'positive',
+          message: 'Admin settings saved!'
+        })
       } catch (err) {
         LNbits.utils.notifyApiError(err)
       } finally {
@@ -299,7 +381,7 @@ window.PageFilesforsats = {
     // ── Storage ─────────────────────────────────────────────────────────────
     async loadStorageUsage() {
       try {
-        const { data } = await LNbits.api.request(
+        const {data} = await LNbits.api.request(
           'GET',
           '/filesforsats/api/v1/storage/usage',
           this.g.user.wallets[0].adminkey
@@ -313,7 +395,7 @@ window.PageFilesforsats = {
     // ── About ─────────────────────────────────────────────────────────────
     async showAboutDialog() {
       try {
-        const { data } = await LNbits.api.request(
+        const {data} = await LNbits.api.request(
           'GET',
           '/filesforsats/api/v1/about',
           this.g.user.wallets[0].adminkey

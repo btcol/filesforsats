@@ -22,12 +22,12 @@ async def test_create_and_get_merchants():
     user_id = uuid4().hex
 
     data = CreateMerchants(
-        name = "name_WDQHukVZojtiHZ2nUcJEvk",
-        mail = "mail_LYEMgLvR6MoCJxN3gHPd5p",
-        currency = "sat",
-        amount = 16,
-        paiddown = False,
-        wallet = "7d630406-50b0-49f6-ab3f-634d3f426c16",
+        name="name_WDQHukVZojtiHZ2nUcJEvk",
+        mail="mail_LYEMgLvR6MoCJxN3gHPd5p",
+        currency="sat",
+        amount=16,
+        paiddown=False,
+        wallet="7d630406-50b0-49f6-ab3f-634d3f426c16",
     )
     merchants_one = await create_merchants(user_id, data)
     assert merchants_one.id is not None
@@ -44,12 +44,12 @@ async def test_create_and_get_merchants():
     assert merchants_one.wallet == data.wallet
 
     data = CreateMerchants(
-        name = "name_WDQHukVZojtiHZ2nUcJEvk",
-        mail = "mail_LYEMgLvR6MoCJxN3gHPd5p",
-        currency = "sat",
-        amount = 16,
-        paiddown = False,
-        wallet = "7d630406-50b0-49f6-ab3f-634d3f426c16",
+        name="name_WDQHukVZojtiHZ2nUcJEvk",
+        mail="mail_LYEMgLvR6MoCJxN3gHPd5p",
+        currency="sat",
+        amount=16,
+        paiddown=False,
+        wallet="7d630406-50b0-49f6-ab3f-634d3f426c16",
     )
     merchants_two = await create_merchants(user_id, data)
     assert merchants_two.id is not None
@@ -76,12 +76,12 @@ async def test_update_merchants():
     user_id = uuid4().hex
 
     data = CreateMerchants(
-        name = "name_WDQHukVZojtiHZ2nUcJEvk",
-        mail = "mail_LYEMgLvR6MoCJxN3gHPd5p",
-        currency = "sat",
-        amount = 16,
-        paiddown = False,
-        wallet = "7d630406-50b0-49f6-ab3f-634d3f426c16",
+        name="name_WDQHukVZojtiHZ2nUcJEvk",
+        mail="mail_LYEMgLvR6MoCJxN3gHPd5p",
+        currency="sat",
+        amount=16,
+        paiddown=False,
+        wallet="7d630406-50b0-49f6-ab3f-634d3f426c16",
     )
     merchants_one = await create_merchants(user_id, data)
     assert merchants_one.id is not None
@@ -98,12 +98,12 @@ async def test_update_merchants():
     assert merchants_one.wallet == data.wallet
 
     data_updated = CreateMerchants(
-        name = "name_WDQHukVZojtiHZ2nUcJEvk",
-        mail = "mail_LYEMgLvR6MoCJxN3gHPd5p",
-        currency = "sat",
-        amount = 16,
-        paiddown = False,
-        wallet = "7d630406-50b0-49f6-ab3f-634d3f426c16",
+        name="name_WDQHukVZojtiHZ2nUcJEvk",
+        mail="mail_LYEMgLvR6MoCJxN3gHPd5p",
+        currency="sat",
+        amount=16,
+        paiddown=False,
+        wallet="7d630406-50b0-49f6-ab3f-634d3f426c16",
     )
     merchants_updated = Merchants(**{**merchants_one.dict(), **data_updated.dict()})
 

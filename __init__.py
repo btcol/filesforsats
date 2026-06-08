@@ -9,9 +9,7 @@ from .tasks import check_monthly_unlocks, wait_for_paid_invoices
 from .views import filesforsats_generic_router
 from .views_api import filesforsats_api_router
 
-filesforsats_ext: APIRouter = APIRouter(
-    prefix="/filesforsats", tags=["filesforsats"]
-)
+filesforsats_ext: APIRouter = APIRouter(prefix="/filesforsats", tags=["filesforsats"])
 filesforsats_ext.include_router(filesforsats_generic_router)
 filesforsats_ext.include_router(filesforsats_api_router)
 
@@ -36,9 +34,7 @@ def filesforsats_stop():
 
 def filesforsats_start():
     task1 = create_permanent_unique_task("ext_filesforsats", wait_for_paid_invoices)
-    task2 = create_permanent_unique_task(
-        "ext_filesforsats_monthly_unlock", check_monthly_unlocks
-    )
+    task2 = create_permanent_unique_task("ext_filesforsats_monthly_unlock", check_monthly_unlocks)
     scheduled_tasks.extend([task1, task2])
 
 

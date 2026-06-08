@@ -150,14 +150,12 @@ async def api_create_product(
 
     if remaining_bytes <= 0:
         raise HTTPException(
-            HTTPStatus.REQUEST_ENTITY_TOO_LARGE,
-            "Storage quota exceeded. Please delete some files to free up space."
+            HTTPStatus.REQUEST_ENTITY_TOO_LARGE, "Storage quota exceeded. Please delete some files to free up space."
         )
 
     # 2. Process and save the uploaded file, enforcing the remaining quota
     original_name, storage_name, mime_type, file_size, sha256_hash = await save_uploaded_file(
-        file,
-        max_allowed_bytes=remaining_bytes
+        file, max_allowed_bytes=remaining_bytes
     )
 
     product = Product(
@@ -369,7 +367,7 @@ async def api_get_about():
     """Reads and serves the config.json for the frontend About dialog."""
     import json
     from pathlib import Path
-    
+
     config_path = Path(__file__).parent / "config.json"
     if not config_path.exists():
         return {}

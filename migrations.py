@@ -76,9 +76,7 @@ async def m003_admin_settings(db):
     """
     )
     # Seed the single row so GET always returns a result.
-    await db.execute(
-        "INSERT INTO filesforsats.admin_settings (id) VALUES (1);"
-    )
+    await db.execute("INSERT INTO filesforsats.admin_settings (id) VALUES (1);")
 
 
 async def m004_unlock_records(db):

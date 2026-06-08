@@ -149,9 +149,9 @@ async def upsert_admin_settings(settings: AdminSettings) -> AdminSettings:
          WHERE id = 1
         """,
         {
-            "commission_percent":   settings.commission_percent,
+            "commission_percent": settings.commission_percent,
             "commission_wallet_id": settings.commission_wallet_id,
-            "unlock_monthly":       settings.unlock_monthly,
+            "unlock_monthly": settings.unlock_monthly,
         },
     )
     return settings

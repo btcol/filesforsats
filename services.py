@@ -44,6 +44,7 @@ MAX_UPLOAD_BYTES: int = 1 * 1024 * 1024 * 1024  # 1 GiB
 #: File types that are explicitly blocked regardless of extension.
 BLOCKED_MIME_PREFIXES: tuple[str, ...] = ()
 
+
 #: Storage directory — files are stored outside the static/ tree.
 def _storage_dir() -> Path:
     """
@@ -68,7 +69,9 @@ def _safe_extension(filename: str) -> str:
     return Path(filename).suffix.lower()
 
 
-async def save_uploaded_file(upload: UploadFile, max_allowed_bytes: int = MAX_UPLOAD_BYTES) -> tuple[str, str, str, int, str]:
+async def save_uploaded_file(
+    upload: UploadFile, max_allowed_bytes: int = MAX_UPLOAD_BYTES
+) -> tuple[str, str, str, int, str]:
     """
     Persist *upload* to disk under a UUID-based name.
 
@@ -105,8 +108,7 @@ async def save_uploaded_file(upload: UploadFile, max_allowed_bytes: int = MAX_UP
                     limit_mib = min(max_allowed_bytes, MAX_UPLOAD_BYTES) // (1024 * 1024)
                     raise HTTPException(
                         HTTPStatus.REQUEST_ENTITY_TOO_LARGE,
-                        f"Upload exceeds the available storage limit or maximum file size "
-                        f"({limit_mib} MiB).",
+                        f"Upload exceeds the available storage limit or maximum file size " f"({limit_mib} MiB).",
                     )
                 sha256.update(chunk)
                 fh.write(chunk)
@@ -182,9 +184,7 @@ async def verify_integrity(product_id: str, code: str) -> VerifyIntegrityRespons
 # ---------------------------------------------------------------------------
 
 
-async def create_purchase_invoice(
-    product_id: str, integrity_token: str | None
-) -> InvoiceResponse:
+async def create_purchase_invoice(product_id: str, integrity_token: str | None) -> InvoiceResponse:
     """
     Create a Lightning invoice for *product_id*.
 
@@ -326,10 +326,7 @@ async def _process_commission(purchase: "Purchase") -> None:
             extra={"tag": "filesforsats_commission", "purchase_id": purchase.id},
         )
 
-        logger.info(
-            f"filesforsats: commission of {commission_sats} sats transferred "
-            f"for purchase {purchase.id}."
-        )
+        logger.info(f"filesforsats: commission of {commission_sats} sats transferred " f"for purchase {purchase.id}.")
 
     except Exception as exc:
         logger.error(f"filesforsats: commission transfer failed for purchase {purchase.id}: {exc}")

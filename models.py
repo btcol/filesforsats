@@ -32,7 +32,6 @@ class UpdateAdminSettings(BaseModel):
         return round(v, 4)
 
 
-
 # ---------------------------------------------------------------------------
 # Product — what the seller creates
 # ---------------------------------------------------------------------------
@@ -55,11 +54,11 @@ class Product(BaseModel):
     name: str
     description: str
     price_sats: int
-    file_name: str       # Original user-provided name (for Content-Disposition)
-    storage_name: str    # UUID-based name on disk (never exposed)
+    file_name: str  # Original user-provided name (for Content-Disposition)
+    storage_name: str  # UUID-based name on disk (never exposed)
     mime_type: str
     file_size: int
-    sha256_hash: str     # Server-computed SHA-256 hex digest (seller-only)
+    sha256_hash: str  # Server-computed SHA-256 hex digest (seller-only)
     require_integrity: bool
 
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -78,7 +77,6 @@ class PublicProduct(BaseModel):
     file_size: int
     mime_type: str
     commission_percent: float = 0.0  # Informational: shown to seller, never used for payment calc on client
-
 
 
 class ProductFilters(FilterModel):

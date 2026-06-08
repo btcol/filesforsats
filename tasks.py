@@ -86,9 +86,7 @@ async def _run_expiry_check() -> None:
             await deactivate_unlock_record(user_id)
 
             # 2. Reset the LNbits core extension state for this user
-            user_ext: UserExtension | None = await get_user_extension(
-                user_id, "filesforsats"
-            )
+            user_ext: UserExtension | None = await get_user_extension(user_id, "filesforsats")
             if user_ext:
                 user_ext.active = False
                 user_ext.extra = UserExtensionInfo(
@@ -96,10 +94,6 @@ async def _run_expiry_check() -> None:
                     payment_hash_to_enable=None,
                 )
                 await update_user_extension(user_ext)
-                logger.info(
-                    f"filesforsats: monthly unlock expired for user {user_id}."
-                )
+                logger.info(f"filesforsats: monthly unlock expired for user {user_id}.")
         except Exception as exc:
-            logger.error(
-                f"filesforsats: failed to expire unlock for {user_id}: {exc}"
-            )
+            logger.error(f"filesforsats: failed to expire unlock for {user_id}: {exc}")

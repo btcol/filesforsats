@@ -36,6 +36,14 @@ window.PageFilesforsatsPublic = {
       const sizes = ['B', 'KB', 'MB', 'GB']
       const i = Math.floor(Math.log(bytes) / Math.log(k))
       return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
+    },
+    priceFormatted() {
+      if (!this.product) return ''
+      const currency = this.product.currency || 'sat'
+      if (currency === 'sat') {
+        return this.product.price_sats.toLocaleString() + ' sats'
+      }
+      return Number(this.product.price).toFixed(2) + ' ' + currency
     }
   },
 

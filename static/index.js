@@ -19,7 +19,7 @@ window.PageFilesforsats = {
           {
             name: 'price_sats',
             align: 'right',
-            label: 'Price (sats)',
+            label: 'Price',
             field: 'price_sats',
             sortable: true
           },
@@ -89,6 +89,7 @@ window.PageFilesforsats = {
         commission_wallet_id: null,
         unlock_monthly: false,
         storage_quota_mb: 1024,
+        default_currency: 'sat',
         loading: false
       },
       adminDialog: false,
@@ -103,7 +104,10 @@ window.PageFilesforsats = {
       storageUsage: {
         used_bytes: 0,
         limit_bytes: 1073741824
-      }
+      },
+
+      // ── Currencies ──────────────────────────────────────────────────────
+      availableCurrencies: ['sat']
     }
   },
 
@@ -148,7 +152,8 @@ window.PageFilesforsats = {
       this.productDialog.data = {
         name: '',
         description: '',
-        price_sats: 1000,
+        price: 1000,
+        currency: this.adminSettings.default_currency || 'sat',
         wallet_id: this.g.user.walletOptions[0]?.value || null,
         require_integrity: true,
         file: null
@@ -170,10 +175,10 @@ window.PageFilesforsats = {
         })
         return
       }
-      if (!d.price_sats || d.price_sats < 1) {
+      if (!d.price || d.price <= 0) {
         Quasar.Notify.create({
           type: 'negative',
-          message: 'Price must be at least 1 sat.'
+          message: 'Price must be greater than 0.'
         })
         return
       }
@@ -191,10 +196,16 @@ window.PageFilesforsats = {
 
       this.productDialog.loading = true
       try {
+        const currency = d.currency || 'sat'
         const form = new FormData()
         form.append('name', d.name.trim())
         form.append('description', d.description || '')
-        form.append('price_sats', String(d.price_sats))
+        form.append(
+          'price_sats',
+          currency === 'sat' ? String(Math.round(d.price)) : '0'
+        )
+        form.append('price', String(d.price))
+        form.append('currency', currency)
         form.append('wallet_id', d.wallet_id)
         form.append('require_integrity', String(d.require_integrity))
         form.append('file', d.file)
@@ -346,6 +357,7 @@ window.PageFilesforsats = {
         this.adminForm.commission_wallet_id = data.commission_wallet_id || null
         this.adminForm.unlock_monthly = data.unlock_monthly
         this.adminForm.storage_quota_mb = data.storage_quota_mb
+        this.adminForm.default_currency = data.default_currency || 'sat'
       } catch (err) {
         console.warn('filesforsats: could not load admin settings', err)
       }
@@ -358,7 +370,8 @@ window.PageFilesforsats = {
           commission_percent: this.adminForm.commission_percent || 0,
           commission_wallet_id: this.adminForm.commission_wallet_id || '',
           unlock_monthly: this.adminForm.unlock_monthly,
-          storage_quota_mb: this.adminForm.storage_quota_mb || 1024
+          storage_quota_mb: this.adminForm.storage_quota_mb || 1024,
+          default_currency: this.adminForm.default_currency || 'sat'
         }
         const {data} = await LNbits.api.request(
           'PUT',
@@ -375,6 +388,20 @@ window.PageFilesforsats = {
         LNbits.utils.notifyApiError(err)
       } finally {
         this.adminForm.loading = false
+      }
+    },
+
+    // ── Currencies ──────────────────────────────────────────────────────────
+    async loadCurrencies() {
+      try {
+        const {data} = await LNbits.api.request(
+          'GET',
+          '/filesforsats/api/v1/currencies',
+          this.g.user.wallets[0].adminkey
+        )
+        this.availableCurrencies = data
+      } catch (err) {
+        console.warn('filesforsats: could not load currencies', err)
       }
     },
 
@@ -412,5 +439,6 @@ window.PageFilesforsats = {
     await this.getProducts()
     await this.loadAdminSettings()
     await this.loadStorageUsage()
+    await this.loadCurrencies()
   }
 }

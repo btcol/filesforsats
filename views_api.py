@@ -30,6 +30,7 @@ from lnbits.core.models.users import AccountId
 from lnbits.db import Filters, Page
 from lnbits.decorators import check_account_id_exists, check_admin, parse_filters
 from lnbits.helpers import generate_filter_params_openapi, urlsafe_short_hash
+from lnbits.utils.exchange_rates import currencies as fiat_currencies
 
 from .crud import (
     create_product,
@@ -97,8 +98,18 @@ async def api_update_admin_settings(body: UpdateAdminSettings) -> AdminSettings:
         commission_wallet_id=body.commission_wallet_id,
         unlock_monthly=body.unlock_monthly,
         storage_quota_mb=body.storage_quota_mb,
+        default_currency=body.default_currency,
     )
     return await upsert_admin_settings(updated)
+
+
+@filesforsats_api_router.get(
+    "/api/v1/currencies",
+    summary="List all supported currencies for product pricing",
+)
+async def api_get_currencies() -> list[str]:
+    """Returns ['sat'] + all ISO-4217 codes supported by LNbits exchange rates."""
+    return ["sat", *sorted(fiat_currencies.keys())]
 
 
 @filesforsats_api_router.post(
@@ -129,6 +140,8 @@ async def api_create_product(
     name: str = Form(...),
     description: str = Form(""),
     price_sats: int = Form(...),
+    price: float = Form(...),
+    currency: str = Form("sat"),
     wallet_id: str = Form(...),
     require_integrity: bool = Form(True),
     file: UploadFile = File(...),
@@ -158,13 +171,19 @@ async def api_create_product(
         file, max_allowed_bytes=remaining_bytes
     )
 
+    # For sat-priced products price == price_sats; for fiat products price_sats
+    # will be zero until the first payment triggers a conversion.
+    effective_price_sats = int(price) if currency == "sat" else 0
+
     product = Product(
         id=urlsafe_short_hash(),
         user_id=account_id.id,
         wallet_id=wallet_id,
         name=name,
         description=description,
-        price_sats=price_sats,
+        price_sats=price_sats if currency == "sat" else effective_price_sats,
+        price=price,
+        currency=currency,
         file_name=original_name,
         storage_name=storage_name,
         mime_type=mime_type,
@@ -262,6 +281,8 @@ async def api_get_public_product(product_id: str) -> PublicProduct:
         name=product.name,
         description=product.description,
         price_sats=product.price_sats,
+        price=product.price,
+        currency=product.currency,
         require_integrity=product.require_integrity,
         file_name=product.file_name,
         file_size=product.file_size,

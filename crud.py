@@ -145,7 +145,8 @@ async def upsert_admin_settings(settings: AdminSettings) -> AdminSettings:
            SET commission_percent     = :commission_percent,
                commission_wallet_id   = :commission_wallet_id,
                unlock_monthly         = :unlock_monthly,
-               storage_quota_mb       = :storage_quota_mb
+               storage_quota_mb       = :storage_quota_mb,
+               default_currency       = :default_currency
          WHERE id = 1
         """,
         {
@@ -153,6 +154,7 @@ async def upsert_admin_settings(settings: AdminSettings) -> AdminSettings:
             "commission_wallet_id": settings.commission_wallet_id,
             "unlock_monthly": settings.unlock_monthly,
             "storage_quota_mb": settings.storage_quota_mb,
+            "default_currency": settings.default_currency,
         },
     )
     return settings

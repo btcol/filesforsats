@@ -3,7 +3,7 @@
   "name": "filesforsats",
   "short_description": "Secure digital file delivery with Lightning payments and cryptographic file verification.",
   "tile": "/filesforsats/static/image/filesforsats.png",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "min_lnbits_version": "1.4.2",
   "repo": "https://github.com/btcol/filesforsats",
   "contributors": [

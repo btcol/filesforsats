@@ -259,12 +259,26 @@
         <q-input
           filled
           dense
-          v-model.number="productDialog.data.price_sats"
-          label="Price (sats) *"
+          v-model.number="productDialog.data.price"
+          :label="
+            productDialog.data.currency === 'sat' ? 'Price (sats) *' : 'Price *'
+          "
           type="number"
-          min="1"
+          :min="productDialog.data.currency === 'sat' ? 1 : 0.01"
+          :step="productDialog.data.currency === 'sat' ? 1 : 0.01"
           class="q-mb-sm"
         ></q-input>
+
+        <q-select
+          filled
+          dense
+          emit-value
+          map-options
+          v-model="productDialog.data.currency"
+          :options="availableCurrencies"
+          label="Currency *"
+          class="q-mb-sm"
+        ></q-select>
 
         <q-select
           filled
@@ -464,6 +478,25 @@
               >
             </q-toggle>
           </div>
+
+          <q-select
+            filled
+            dense
+            emit-value
+            map-options
+            v-model="adminForm.default_currency"
+            :options="availableCurrencies"
+            label="Default product currency"
+          >
+            <template v-slot:append>
+              <q-icon name="help_outline" class="cursor-pointer">
+                <q-tooltip
+                  >Pre-selected currency when sellers create a new product. Each
+                  seller can still change it per product.</q-tooltip
+                >
+              </q-icon>
+            </template>
+          </q-select>
         </q-card-section>
 
         <div class="row q-mt-lg">

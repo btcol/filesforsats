@@ -1,6 +1,6 @@
 [project]
 name = "filesforsats"
-version = "0.1.0"
+version = "0.0.4"
 requires-python = ">=3.10,<3.13"
 description = "<<Secure digital file delivery with Lightning payments and cryptographic file verification.>>"
 authors = []

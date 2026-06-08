@@ -107,3 +107,28 @@ async def m005_admin_settings_storage_quota(db):
     await db.execute(
         "ALTER TABLE filesforsats.admin_settings ADD COLUMN storage_quota_mb INTEGER NOT NULL DEFAULT 1024;"
     )
+
+
+async def m006_add_currency_columns(db):
+    """
+    Adds multi-currency support to products.
+    - price: the product price in the chosen currency (replaces the integer-only price_sats).
+    - currency: ISO 4217 code or 'sat' / 'btc' (default: 'sat').
+    - default_currency on admin_settings: pre-selected currency for new products.
+
+    Existing rows keep price_sats; price is back-filled from price_sats so that
+    sat-priced products continue to work without data loss.
+    """
+    await db.execute(
+        "ALTER TABLE filesforsats.products ADD COLUMN price REAL NOT NULL DEFAULT 0;"
+    )
+    await db.execute(
+        "ALTER TABLE filesforsats.products ADD COLUMN currency TEXT NOT NULL DEFAULT 'sat';"
+    )
+    # Back-fill price from the legacy integer column so existing products work
+    await db.execute(
+        "UPDATE filesforsats.products SET price = CAST(price_sats AS REAL) WHERE price = 0;"
+    )
+    await db.execute(
+        "ALTER TABLE filesforsats.admin_settings ADD COLUMN default_currency TEXT NOT NULL DEFAULT 'sat';"
+    )

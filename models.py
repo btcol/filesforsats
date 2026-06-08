@@ -16,6 +16,7 @@ class AdminSettings(BaseModel):
     commission_wallet_id: str = ""
     unlock_monthly: bool = False
     storage_quota_mb: int = Field(1024, ge=1)
+    default_currency: str = "sat"
 
 
 class UpdateAdminSettings(BaseModel):
@@ -25,6 +26,7 @@ class UpdateAdminSettings(BaseModel):
     commission_wallet_id: str = ""
     unlock_monthly: bool = False
     storage_quota_mb: int = Field(1024, ge=1)
+    default_currency: str = "sat"
 
     @validator("commission_percent")
     def _round_percent(cls, v):
@@ -42,6 +44,8 @@ class CreateProduct(BaseModel):
     name: str
     description: str = ""
     price_sats: int
+    price: float
+    currency: str = "sat"
     wallet_id: str
     require_integrity: bool = True
 
@@ -53,6 +57,8 @@ class Product(BaseModel):
     name: str
     description: str
     price_sats: int
+    price: float
+    currency: str = "sat"
     file_name: str  # Original user-provided name (for Content-Disposition)
     storage_name: str  # UUID-based name on disk (never exposed)
     mime_type: str
@@ -71,6 +77,8 @@ class PublicProduct(BaseModel):
     name: str
     description: str
     price_sats: int
+    price: float
+    currency: str = "sat"
     require_integrity: bool
     file_name: str
     file_size: int
@@ -80,7 +88,7 @@ class PublicProduct(BaseModel):
 
 class ProductFilters(FilterModel):
     __search_fields__ = ["name", "description"]
-    __sort_fields__ = ["name", "price_sats", "created_at", "updated_at"]
+    __sort_fields__ = ["name", "price_sats", "price", "created_at", "updated_at"]
 
     created_at: datetime | None = None
     updated_at: datetime | None = None

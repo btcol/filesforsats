@@ -226,11 +226,12 @@ async def create_purchase_invoice(product_id: str, integrity_token: str | None) 
         )
         await create_purchase(purchase)
 
-    # Create the LNbits invoice
+    # Create the LNbits invoice — currency may be fiat (e.g. USD) or 'sat'
+    # LNbits core converts fiat amounts to sats automatically via exchange rates.
     payment: Payment = await create_invoice(
         wallet_id=product.wallet_id,
-        amount=product.price_sats,
-        currency="sat",
+        amount=product.price,
+        currency=product.currency,
         extra={"tag": "filesforsats", "purchase_id": purchase.id},
         memo=f"filesforsats: {product.name} [{purchase.id[:8]}]",
     )

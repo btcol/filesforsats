@@ -42,9 +42,7 @@
           <q-separator class="q-mb-md"></q-separator>
           <div class="row items-center">
             <q-icon name="bolt" color="amber" size="1.4em"></q-icon>
-            <span class="text-h5 text-bold q-ml-xs"
-              >${ product.price_sats.toLocaleString() } sats</span
-            >
+            <span class="text-h5 text-bold q-ml-xs">${ priceFormatted }</span>
           </div>
         </q-card>
 
@@ -101,7 +99,7 @@
             :loading="invoiceLoading"
             class="full-width"
           >
-            Pay ${ product.price_sats.toLocaleString() } sats
+            Pay ${ priceFormatted }
           </q-btn>
         </q-card>
 
@@ -115,7 +113,7 @@
             :loading="invoiceLoading"
             class="full-width"
           >
-            Pay ${ product.price_sats.toLocaleString() } sats
+            Pay ${ priceFormatted }
           </q-btn>
         </q-card>
 

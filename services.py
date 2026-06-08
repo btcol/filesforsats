@@ -10,11 +10,10 @@ Key responsibilities:
 
 import hashlib
 import mimetypes
-import shutil
+from http import HTTPStatus
 from pathlib import Path
 
 from fastapi import HTTPException, UploadFile
-from http import HTTPStatus
 from lnbits.core.models import Payment
 from lnbits.core.services import create_invoice
 from lnbits.helpers import urlsafe_short_hash
@@ -29,7 +28,6 @@ from .crud import (
 )
 from .models import (
     InvoiceResponse,
-    Product,
     Purchase,
     VerifyIntegrityResponse,
 )
@@ -117,7 +115,7 @@ async def save_uploaded_file(
     except Exception as exc:
         dest_path.unlink(missing_ok=True)
         logger.error(f"filesforsats: error saving upload: {exc}")
-        raise HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, "Could not save the uploaded file.")
+        raise HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, "Could not save the uploaded file.") from exc
 
     return original_name, storage_name, mime_type, total_bytes, sha256.hexdigest()
 

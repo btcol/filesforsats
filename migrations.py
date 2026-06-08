@@ -66,7 +66,7 @@ async def m003_admin_settings(db):
       calendar month; if FALSE it is a one-time lifetime payment (default).
     """
     await db.execute(
-        f"""
+        """
         CREATE TABLE filesforsats.admin_settings (
             id INTEGER PRIMARY KEY DEFAULT 1,
             commission_percent REAL NOT NULL DEFAULT 0,

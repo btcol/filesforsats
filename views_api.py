@@ -56,7 +56,6 @@ from .models import (
     VerifyIntegrityResponse,
 )
 from .services import (
-    MAX_UPLOAD_BYTES,
     create_purchase_invoice,
     delete_stored_file,
     get_file_path,
@@ -144,9 +143,9 @@ async def api_create_product(
         raise HTTPException(HTTPStatus.BAD_REQUEST, "No file provided.")
 
     admin_cfg = await get_admin_settings()
-    MAX_QUOTA_BYTES = admin_cfg.storage_quota_mb * 1024 * 1024
+    max_quota_bytes = admin_cfg.storage_quota_mb * 1024 * 1024
     used_bytes = await get_user_storage_usage(account_id.id)
-    remaining_bytes = max(0, MAX_QUOTA_BYTES - used_bytes)
+    remaining_bytes = max(0, max_quota_bytes - used_bytes)
 
     if remaining_bytes <= 0:
         raise HTTPException(
@@ -371,5 +370,5 @@ async def api_get_about():
     config_path = Path(__file__).parent / "config.json"
     if not config_path.exists():
         return {}
-    with open(config_path, "r", encoding="utf-8") as f:
+    with open(config_path, encoding="utf-8") as f:
         return json.load(f)

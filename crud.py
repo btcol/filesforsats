@@ -4,7 +4,6 @@ All DB interactions are isolated here so views_api stays clean.
 """
 
 from lnbits.db import Database, Filters, Page
-from lnbits.helpers import urlsafe_short_hash
 
 from .models import (
     AdminSettings,

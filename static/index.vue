@@ -288,10 +288,14 @@
         <q-card-section class="q-pa-none q-gutter-y-md">
           <p class="text-body2 text-grey-8">${aboutDialog.config.short_description}</p>
           
-          <div class="column q-gutter-y-md" v-if="aboutDialog.config.images && aboutDialog.config.images.length > 0">
-            <q-img v-if="aboutDialog.config.images[0].uri" :src="aboutDialog.config.images[0].uri" style="max-height: 200px" fit="contain" class="rounded-borders" />
+          <div v-if="aboutDialog.config.images && aboutDialog.config.images.length > 0">
+            <div v-if="aboutDialog.config.images[0].uri" class="q-mb-md text-center">
+              <img :src="aboutDialog.config.images[0].uri" style="max-width: 100%; max-height: 200px; object-fit: contain; border-radius: 4px;" />
+            </div>
             
-            <q-btn v-if="aboutDialog.config.images[0].link" outline color="red" icon="play_circle" label="Watch Video Tutorial" class="full-width" :href="aboutDialog.config.images[0].link" target="_blank" />
+            <a v-if="aboutDialog.config.images[0].link" :href="aboutDialog.config.images[0].link" target="_blank" style="text-decoration: none;">
+              <q-btn outline color="red" icon="play_circle" label="Watch Video Tutorial" class="full-width" />
+            </a>
           </div>
 
           <div v-if="aboutDialog.config.contributors && aboutDialog.config.contributors.length > 0">
